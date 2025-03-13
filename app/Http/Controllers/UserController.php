@@ -30,20 +30,21 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:user',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:8',
+    ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-        
-        return back()->with('success', 'User created successfully!');
+    User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+    ]);
+    
+    return back()->with('success', 'User created successfully!');
     }
+
 
     /**
      * Display the specified resource.
@@ -66,26 +67,19 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, User $user)
     {
         $request->validate([
-            'name' => 'required|string|max:255',       
-            'email' => 'required|string|email|max:255|unique:user,email,' . $id,
-            'password' => 'nullable|string|min:8|confirmed', 
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
         ]);
 
-        $user = User::findOrFail($id);
-        $user->name = $request->name;
-        $user->email = $request->email;
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+        ]);
 
-        
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-        }
-
-        $user->save();
-
-        return redirect()->route('users.index')->with('success', 'User updated successfully!');
+        return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
     /**
